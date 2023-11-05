@@ -1,8 +1,8 @@
 import cv2
-from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 import pytesseract
+from PIL import Image
 
 
 def visualize_documents(image, bboxes=[], save=False, show=True, filename="test.jpg"):
@@ -122,11 +122,11 @@ def apply_ocr(image, return_boxes=False):
 def normalize_box(box):
     """Helper function to normalize boxes on a scale of 0-1000"""
     return [
-         int(1000 * box[0]),
-         int(1000 * box[1]),
-         int(1000 * box[2]),
-         int(1000 * box[3]),
-     ]
+        int(1000 * box[0]),
+        int(1000 * box[1]),
+        int(1000 * box[2]),
+        int(1000 * box[3]),
+    ]
 
 
 def encode_example(example, tokenizer, max_seq_length=512, pad_token_box=[0, 0, 0, 0]):
@@ -177,12 +177,13 @@ def encode_example(example, tokenizer, max_seq_length=512, pad_token_box=[0, 0, 
 
     return encoding
 
+
 def encode_example_v2(example, processor):
-  # take a batch of images
-  images = example["image"].convert("RGB")
-  encoded_inputs = processor(images, padding="max_length", truncation=True)
+    # take a batch of images
+    images = example["image"].convert("RGB")
+    encoded_inputs = processor(images, padding="max_length", truncation=True)
 
-  # add labels
-  encoded_inputs["labels"] = example["labels"]
+    # add labels
+    encoded_inputs["labels"] = example["labels"]
 
-  return encoded_inputs
+    return encoded_inputs
