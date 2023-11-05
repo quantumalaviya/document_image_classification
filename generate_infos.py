@@ -12,7 +12,7 @@ def generate_infos(data_root, split, resize_factor=4):
     """Generates the training and val infos
 
     This function helps caches the compute-intensive OCR preprocessing required
-    for the solution. 
+    for the solution.
 
     Args:
         data_root: the root folder where the dataset belongs
@@ -65,7 +65,6 @@ def generate_infos(data_root, split, resize_factor=4):
     return train_infos, val_infos
 
 
-
 if __name__ == "__main__":
     train_infos, val_infos = generate_infos(
         data_root="./data/rvl_cdip_1000_samples",
@@ -76,7 +75,7 @@ if __name__ == "__main__":
         pickle.dump(train_infos, pkl, protocol=pickle.HIGHEST_PROTOCOL)
     with open("./data/val_infos.pkl", "wb") as pkl:
         pickle.dump(val_infos, pkl, protocol=pickle.HIGHEST_PROTOCOL)
-    
+
     print("Train and validation infos generated")
     print("Size of train set", len(train_infos["images"]))
     print("Size of val set", len(val_infos["images"]))

@@ -1,4 +1,5 @@
 import cv2
+from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 import pytesseract
@@ -29,11 +30,11 @@ def visualize_documents(image, bboxes=[], save=False, show=True, filename="test.
         image = cv2.rectangle(
             image,
             (
-                int(box[0] * image_width), 
+                int(box[0] * image_width),
                 int(box[1] * image_height),
             ),
             (
-                int(box[2] * image_width), 
+                int(box[2] * image_width),
                 int(box[3] * image_height),
             ),
             color=[255, 0, 0],
@@ -105,7 +106,7 @@ def apply_ocr(image, return_boxes=False):
                 x / image_width,
                 y / image_height,
                 (x + w) / image_width,
-                (y + h) / image_height
+                (y + h) / image_height,
             ]
             bboxes.append(bbox)
 
@@ -116,3 +117,72 @@ def apply_ocr(image, return_boxes=False):
         return words, bboxes
 
     return words
+
+
+def normalize_box(box):
+    """Helper function to normalize boxes on a scale of 0-1000"""
+    return [
+         int(1000 * box[0]),
+         int(1000 * box[1]),
+         int(1000 * box[2]),
+         int(1000 * box[3]),
+     ]
+
+
+def encode_example(example, tokenizer, max_seq_length=512, pad_token_box=[0, 0, 0, 0]):
+    """Encodes an example to prepare it for the model forward pass
+
+    Args:
+      example: a single example dict containing the images, words, labels and
+          optionally the boxes.
+      tokenizer: the huggingface tokenizer to be used for the words. Optionally,
+          can be any tokenizer that extends the HF Tokenizer class.
+      max_seq_length: the max sequence length after which inputs will be clipped
+          defaults to 512.
+      pad_token_box: The values to pad the bboxes with, defaults to [0, 0, 0, 0].
+    """
+    # wor
+    del example["image"]
+    words = example["words"]
+    del example["words"]
+    bboxes = example["bbox"]
+    normalized_word_boxes = list(map(normalize_box, bboxes))
+
+    assert len(words) == len(normalized_word_boxes)
+
+    token_boxes = []
+    for word, box in zip(words, normalized_word_boxes):
+        word_tokens = tokenizer.tokenize(word)
+        token_boxes.extend([box] * len(word_tokens))
+
+    # Truncation of token_boxes
+    special_tokens_count = 2
+    if len(token_boxes) > max_seq_length - special_tokens_count:
+        token_boxes = token_boxes[: (max_seq_length - special_tokens_count)]
+
+    # add bounding boxes of cls + sep tokens
+    token_boxes = [[0, 0, 0, 0]] + token_boxes + [[1000, 1000, 1000, 1000]]
+    encoding = tokenizer(" ".join(words), padding="max_length", truncation=True)
+    # Padding of token_boxes up the bounding boxes to the sequence length.
+    input_ids = tokenizer(" ".join(words), truncation=True)["input_ids"]
+    padding_length = max_seq_length - len(input_ids)
+    token_boxes += [pad_token_box] * padding_length
+    encoding["bbox"] = token_boxes
+    encoding["labels"] = example["labels"]
+
+    assert len(encoding["input_ids"]) == max_seq_length
+    assert len(encoding["attention_mask"]) == max_seq_length
+    assert len(encoding["token_type_ids"]) == max_seq_length
+    assert len(encoding["bbox"]) == max_seq_length
+
+    return encoding
+
+def encode_example_v2(example, processor):
+  # take a batch of images
+  images = example["image"].convert("RGB")
+  encoded_inputs = processor(images, padding="max_length", truncation=True)
+
+  # add labels
+  encoded_inputs["labels"] = example["labels"]
+
+  return encoded_inputs
