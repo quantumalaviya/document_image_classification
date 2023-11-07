@@ -15,7 +15,7 @@ from utils import encode_example, encode_example_v2
 method = "microsoft/layoutlm-base-uncased"
 
 # define whether to only test or also train
-test_only = True
+test_only = False
 
 # checkpoint to test the model on
 CKPT_PATH = None
