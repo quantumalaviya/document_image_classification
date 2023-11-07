@@ -141,7 +141,6 @@ def encode_example(example, tokenizer, max_seq_length=512, pad_token_box=[0, 0, 
           defaults to 512.
       pad_token_box: The values to pad the bboxes with, defaults to [0, 0, 0, 0].
     """
-    # wor
     del example["image"]
     words = example["words"]
     del example["words"]
@@ -181,7 +180,14 @@ def encode_example(example, tokenizer, max_seq_length=512, pad_token_box=[0, 0, 
 def encode_example_v2(example, processor):
     # take a batch of images
     images = example["image"].convert("RGB")
-    encoded_inputs = processor(images, padding="max_length", truncation=True)
+    del example["image"]
+    encoded_inputs = processor(
+        images,
+        text = example["words"],
+        boxes = example["bbox"],
+        padding="max_length",
+        truncation=True
+    )
 
     # add labels
     encoded_inputs["labels"] = example["labels"]
