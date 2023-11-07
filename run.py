@@ -21,7 +21,7 @@ test_only = False
 CKPT_PATH = None
 
 # define the batch_size
-batch_size = 1
+batch_size = 8
 
 # define train epochs
 epochs = 10
@@ -137,5 +137,5 @@ if __name__ == "__main__":
     trainer.validate(
         model=classifier,
         dataloaders=val_loader,
-        ckpt_path=CKPT_PATH if CKPT_PATH else None,
+        ckpt_path=CKPT_PATH if CKPT_PATH else "best",
     )
