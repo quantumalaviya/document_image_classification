@@ -185,13 +185,13 @@ def encode_example_v2(example, processor):
         text=example["words"],
         boxes=example["bbox"],
         padding="max_length",
-        truncation=True
+        truncation=True,
     )
 
     # add labels
     encoded_inputs["labels"] = example["labels"]
 
     # dealing with unbatched examples
-    encoded_inputs["image"]  =encoded_inputs["image"][0]
+    encoded_inputs["image"] = encoded_inputs["image"][0]
 
     return encoded_inputs

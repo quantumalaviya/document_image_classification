@@ -125,7 +125,9 @@ if __name__ == "__main__":
 
     classifier = DocumentClassifier(model)
 
-    checkpoint_callback = pl.pytorch.callbacks.ModelCheckpoint(dirpath='checkpoints/', monitor="val_acc")
+    checkpoint_callback = pl.pytorch.callbacks.ModelCheckpoint(
+        dirpath="checkpoints/", monitor="val_loss"
+    )
     trainer = pl.Trainer(max_epochs=epochs, callbacks=[checkpoint_callback])
 
     if not test_only:

@@ -36,4 +36,6 @@ For both the tasks, `run.py` can be used. In the scope of this project, `run.py`
 
 A great example how each method can be run are the notebooks. Just add a way to clone the repo and link to drive containing the infos and the data zip file.
 
-For any doubts on setup or run please contact me at malaviyasarvagya22@gmail.com.
+Note: There may be some TODOs and personal notes in the code comments. I have decided to leave them be for this project since I feel its mature enough for a PoC. Please feel free to discuss any design/coding choices with me.
+
+For any doubts, please contact me at malaviyasarvagya22@gmail.com.
