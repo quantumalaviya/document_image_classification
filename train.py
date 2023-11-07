@@ -45,5 +45,9 @@ class DocumentClassifier(pl.LightningModule):
         self.log("val_acc", self.val_accuracy, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = AdamW(self.parameters(), lr=5e-4)
+        optimizer = AdamW(self.parameters(), lr=5e-5)
         return optimizer
+    
+    def forward(self, batch):
+        outputs = self.model(**batch)
+        return outputs

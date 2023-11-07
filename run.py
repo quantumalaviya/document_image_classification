@@ -12,13 +12,19 @@ from utils import encode_example, encode_example_v2
 
 # define the method
 # one of ["bert-base-uncased", "microsoft/layoutlm-base-uncased", ""microsoft/layoutlmv2-base-uncased""]
-method = "microsoft/layoutlmv2-base-uncased"
+method = "microsoft/layoutlm-base-uncased"
+
+# define whether to only test or also train
+test_only = True
+
+# checkpoint to test the model on
+CKPT_PATH = None
 
 # define the batch_size
 batch_size = 1
 
 # define train epochs
-epochs = 30
+epochs = 10
 
 # auto detect device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -71,7 +77,8 @@ if __name__ == "__main__":
     model = AutoModelForSequenceClassification.from_pretrained(method, num_labels=16)
 
     # generate HF datasets
-    train_ds = dataset_generator(train_infos_path)
+    if not test_only:
+        train_ds = dataset_generator(train_infos_path)
     val_ds = dataset_generator(val_infos_path)
 
     # encode the OCR outputs and some additional preprocessing
@@ -80,11 +87,12 @@ if __name__ == "__main__":
         feature_extractor = LayoutLMv2FeatureExtractor(apply_ocr=False)
         processor = LayoutLMv2Processor(feature_extractor, tokenizer)
 
-        train_ds = train_ds.map(
-            lambda example: encode_example_v2(example, processor),
-            features=Features(features),
-            num_proc=os.cpu_count(),
-        )
+        if not test_only:
+            train_ds = train_ds.map(
+                lambda example: encode_example_v2(example, processor),
+                features=Features(features),
+                num_proc=os.cpu_count(),
+            )
         val_ds = val_ds.map(
             lambda example: encode_example_v2(example, processor),
             features=Features(features),
@@ -92,11 +100,12 @@ if __name__ == "__main__":
         )
     else:
         # TODO: DRY
-        train_ds = train_ds.map(
-            lambda example: encode_example(example, tokenizer),
-            features=Features(features),
-            num_proc=os.cpu_count(),
-        )
+        if not test_only:
+            train_ds = train_ds.map(
+                lambda example: encode_example(example, tokenizer),
+                features=Features(features),
+                num_proc=os.cpu_count(),
+            )
         val_ds = val_ds.map(
             lambda example: encode_example(example, tokenizer),
             features=Features(features),
@@ -104,19 +113,29 @@ if __name__ == "__main__":
         )
 
     # convert to a torch dataset and feed to a dataloader for training
-    train_ds.set_format(type="torch", columns=method_columns[method])
-    train_loader = torch.utils.data.DataLoader(
-        train_ds, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count()
-    )
+    if not test_only:
+        train_ds.set_format(type="torch", columns=method_columns[method])
+        train_loader = torch.utils.data.DataLoader(
+            train_ds, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count()
+        )
     val_ds.set_format(type="torch", columns=method_columns[method])
     val_loader = torch.utils.data.DataLoader(
         val_ds, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count()
     )
 
     classifier = DocumentClassifier(model)
-    trainer = pl.Trainer(max_epochs=epochs)
-    trainer.fit(
+
+    checkpoint_callback = pl.pytorch.callbacks.ModelCheckpoint(monitor="val_acc")
+    trainer = pl.Trainer(max_epochs=epochs, callbacks=[checkpoint_callback])
+
+    if not test_only:
+        trainer.fit(
+            model=classifier,
+            train_dataloaders=train_loader,
+            val_dataloaders=val_loader,
+        )
+    trainer.validate(
         model=classifier,
-        train_dataloaders=train_loader,
-        val_dataloaders=val_loader,
+        dataloaders=val_loader,
+        ckpt_path=CKPT_PATH if CKPT_PATH else None,
     )

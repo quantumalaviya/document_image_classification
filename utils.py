@@ -180,16 +180,18 @@ def encode_example(example, tokenizer, max_seq_length=512, pad_token_box=[0, 0, 
 def encode_example_v2(example, processor):
     # take a batch of images
     images = example["image"].convert("RGB")
-    del example["image"]
     encoded_inputs = processor(
         images,
-        text = example["words"],
-        boxes = example["bbox"],
+        text=example["words"],
+        boxes=example["bbox"],
         padding="max_length",
         truncation=True
     )
 
     # add labels
     encoded_inputs["labels"] = example["labels"]
+
+    # dealing with unbatched examples
+    encoded_inputs["image"]  =encoded_inputs["image"][0]
 
     return encoded_inputs
