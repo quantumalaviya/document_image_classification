@@ -105,11 +105,11 @@ if __name__ == "__main__":
     # convert to a torch dataset and feed to a dataloader for training
     train_ds.set_format(type="torch", columns=method_columns[method])
     train_loader = torch.utils.data.DataLoader(
-        train_ds, batch_size=batch_size, shuffle=True
+        train_ds, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count()
     )
     val_ds.set_format(type="torch", columns=method_columns[method])
     val_loader = torch.utils.data.DataLoader(
-        val_ds, batch_size=batch_size, shuffle=True
+        val_ds, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count()
     )
 
     classifier = DocumentClassifier(model)

@@ -22,30 +22,28 @@ class DocumentClassifier(pl.LightningModule):
         outputs = self.model(**batch)
         loss = outputs.loss
 
+        self.log("train_loss", loss, prog_bar=True)
+
         preds = outputs.logits.argmax(-1)
         self.train_accuracy(preds, batch["labels"])
-        self.log("train_acc_step", self.train_accuracy, prog_bar=True)
-
-        self.log("train_loss", loss, prog_bar=True)
         return loss
 
     def on_train_epoch_end(self):
-        self.log("train_acc_epoch", self.train_accuracy, prog_bar=True)
+        self.log("train_acc", self.train_accuracy, prog_bar=True)
 
     def validation_step(self, batch):
         outputs = self.model(**batch)
         loss = outputs.loss
 
+        self.log("val_loss", loss, prog_bar=True)
+
         preds = outputs.logits.argmax(-1)
         self.val_accuracy(preds, batch["labels"])
-        self.log("train_acc_step", self.val_accuracy, prog_bar=True)
-
-        self.log("val_loss", loss, prog_bar=True)
         return loss
 
-    def on_train_epoch_end(self):
-        self.log("val_acc_epoch", self.val_accuracy, prog_bar=True)
+    def on_val_epoch_end(self):
+        self.log("val_acc", self.val_accuracy, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = AdamW(self.parameters(), lr=1e-3)
+        optimizer = AdamW(self.parameters(), lr=5e-4)
         return optimizer
