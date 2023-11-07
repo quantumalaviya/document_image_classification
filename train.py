@@ -5,10 +5,17 @@ from transformers import AdamW
 
 
 class DocumentClassifier(pl.LightningModule):
+    """A basic PyTorch Lightning Module to handle everything from training to testing.
+    
+    The functions defined here work automatically through Lightning, just by subclassing.
+    This is ideal for adding a lot of Deep Learning tricks without any complex 
+    code.
+    """
+
     def __init__(self, model):
         super().__init__()
         self.model = model
-        # hardcoding classes
+        # TODO: hardcoding classes
         self.train_accuracy = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=16
         )
@@ -47,7 +54,7 @@ class DocumentClassifier(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = AdamW(self.parameters(), lr=5e-5)
         return optimizer
-    
+
     def forward(self, batch):
         outputs = self.model(**batch)
         return outputs
