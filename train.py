@@ -41,7 +41,7 @@ class DocumentClassifier(pl.LightningModule):
         self.val_accuracy(preds, batch["labels"])
         return loss
 
-    def on_val_epoch_end(self):
+    def on_validation_epoch_end(self):
         self.log("val_acc", self.val_accuracy, prog_bar=True)
 
     def configure_optimizers(self):
