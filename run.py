@@ -12,7 +12,7 @@ from utils import encode_example, encode_example_v2
 
 # define the method
 # one of ["bert-base-uncased", "microsoft/layoutlm-base-uncased", ""microsoft/layoutlmv2-base-uncased""]
-method = "microsoft/layoutlm-base-uncased"
+method = "microsoft/layoutlmv2-base-uncased"
 
 # define the batch_size
 batch_size = 1
@@ -76,7 +76,8 @@ if __name__ == "__main__":
 
     # encode the OCR outputs and some additional preprocessing
     if "v2" in method:
-        feature_extractor = LayoutLMv2FeatureExtractor()
+        # OCR has been precomputed, setting it False saves a lot of time.
+        feature_extractor = LayoutLMv2FeatureExtractor(apply_ocr=False)
         processor = LayoutLMv2Processor(feature_extractor, tokenizer)
 
         train_ds = train_ds.map(
