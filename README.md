@@ -31,7 +31,7 @@ Brief overview of all files:
    └── val_infos.pkl
 ```
 
-# TRAIN AN EVAL
+# TRAIN AND EVAL
 For both the tasks, `run.py` can be used. In the scope of this project, `run.py` doesn't have an argument parser. For this reason, the parameters have to be manually set inside the folder. I have tried to keep the parameters that need to be set on the top. 
 
 A great example how each method can be run are the notebooks. Just add a way to clone the repo and link to drive containing the infos and the data zip file.
